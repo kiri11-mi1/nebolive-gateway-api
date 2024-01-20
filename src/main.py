@@ -13,7 +13,7 @@ async def hello():
     return {
         "response": {
             "end_session": True,
-            "text": "Оксана ты жопка"
+            "text": "Привет и тебе!"
         },
         "version": "1.0",
     }
