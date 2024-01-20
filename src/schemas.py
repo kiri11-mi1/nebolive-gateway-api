@@ -6,6 +6,6 @@ class ResponseNestedSchema(BaseModel):
     end_session: bool = True
 
 
-class ServerResponse(BaseModel):
+class YandexStationResponse(BaseModel):
     response: ResponseNestedSchema
     version: str = '1.0'
