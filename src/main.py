@@ -1,6 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 
-from src.schemas import ServerResponse, ResponseNestedSchema
+from src.schemas import YandexStationResponse, ResponseNestedSchema
 
 app = FastAPI(
     docs_url='/docs',
@@ -9,8 +9,11 @@ app = FastAPI(
 )
 
 
-@app.post('/hello/')
-async def hello():
-    return ServerResponse(
+@app.post('/station/', response_model=YandexStationResponse)
+async def station(
+    latitude: float = Query(..., description='Широта'),
+    longitude: float = Query(..., description='Долгота'),
+):
+    return YandexStationResponse(
         response=ResponseNestedSchema(text='Привет, мир!'),
     )
