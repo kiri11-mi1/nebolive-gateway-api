@@ -14,5 +14,6 @@ async def hello():
         "response": {
             "end_session": False,
             "text": "Привет и тебе!"
-        }
+        },
+        "version": "1.0",
     }
