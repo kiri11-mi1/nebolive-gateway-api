@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from src.schemas import ServerResponse, ResponseNestedSchema
 
 app = FastAPI(
     docs_url='/docs',
@@ -10,10 +11,6 @@ app = FastAPI(
 
 @app.post('/hello/')
 async def hello():
-    return {
-        "response": {
-            "end_session": True,
-            "text": "Привет и тебе!"
-        },
-        "version": "1.0",
-    }
+    return ServerResponse(
+        response=ResponseNestedSchema(text='Привет, мир!'),
+    )
