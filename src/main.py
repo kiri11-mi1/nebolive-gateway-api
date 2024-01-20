@@ -8,7 +8,7 @@ app = FastAPI(
 )
 
 
-@app.get('/hello/')
+@app.post('/hello/')
 async def hello():
     return {
         "response": {
