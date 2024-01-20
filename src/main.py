@@ -12,7 +12,7 @@ app = FastAPI(
 async def hello():
     return {
         "response": {
-            "end_session": False,
+            "end_session": True,
             "text": "Привет и тебе!"
         },
         "version": "1.0",
