@@ -1,0 +1,14 @@
+[project]
+name = "nebolive-gateway-api"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "kiri11-mi1", email = "kirill.mil.0310@mail.ru"},
+]
+dependencies = []
+requires-python = "==3.11.*"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
