@@ -10,4 +10,9 @@ app = FastAPI(
 
 @app.get('/hello')
 async def hello():
-    return {'response': 'hello world!'}
+    return {
+        "response": {
+            "end_session": False,
+            "text": "Привет и тебе!"
+        }
+    }
