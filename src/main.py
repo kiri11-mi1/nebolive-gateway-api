@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Query
 
 from src.schemas import YandexStationResponse, ResponseNestedSchema
+from src.service import get_nebolive_service, NeboliveService
+from fastapi import Depends
 
 app = FastAPI(
     docs_url='/docs',
@@ -11,9 +13,10 @@ app = FastAPI(
 
 @app.post('/station/', response_model=YandexStationResponse)
 async def station(
-    latitude: float = Query(..., description='Широта'),
-    longitude: float = Query(..., description='Долгота'),
+    city: str = Query(..., description='Город'),
+    nebolive: NeboliveService = Depends(get_nebolive_service),
 ):
+    nebolive_report = nebolive.get_report_by_city(city)
     return YandexStationResponse(
-        response=ResponseNestedSchema(text='Привет, мир!'),
+        response=ResponseNestedSchema(text=nebolive_report.message),
     )
