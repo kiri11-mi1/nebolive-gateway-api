@@ -39,6 +39,5 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd nebolive-gateway-api
-            docker compose down
-            docker compose build
+            docker compose down --remove-orphans
             docker compose up -d
