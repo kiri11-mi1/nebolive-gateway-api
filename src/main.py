@@ -11,34 +11,15 @@ app = FastAPI(
 )
 
 
-@app.post('/station/')
+@app.post('/station/', response_model=YandexStationResponse)
 async def station(
     city: str = Query(..., description='Город'),
     nebolive: NeboliveService = Depends(get_nebolive_service),
 ):
     nebolive_report = nebolive.get_report_by_city(city)
-    return {
-        'response': {
-            'text': nebolive_report.message,
-            'value': nebolive_report.aqi,
-            'end_session': True,
-            'buttons': [
-                {
-                    "title": "234",
-                    "payload": {},
-                    "url": "https://nebo.live/ru/",
-                    "hide": True,
-                },
-            ],
-        },
-        "session_state": {
-            "value": 10
-        },
-        "user_state_update": {
-            "value": 42
-        },
-        "application_state": {
-            "value": 37
-        },
-        'version': '1.0',
-    }
+    return YandexStationResponse(
+        response=ResponseNestedSchema(
+            text=nebolive_report.message,
+            end_session=True,
+        )
+    )
