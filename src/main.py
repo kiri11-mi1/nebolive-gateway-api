@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Query
 
-from src.schemas import YandexStationResponse, ResponseNestedSchema
-from src.service import get_nebolive_service, NeboliveService
+from schemas import YandexStationResponse, ResponseNestedSchema
+from service import get_nebolive_service, NeboliveService
 from fastapi import Depends
 
 app = FastAPI(
