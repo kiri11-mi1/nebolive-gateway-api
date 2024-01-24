@@ -20,6 +20,7 @@ async def station(
     return {
         'response': {
             'text': nebolive_report.message,
+            'value': nebolive_report.aqi,
             'end_session': True,
             'buttons': [
                 {
