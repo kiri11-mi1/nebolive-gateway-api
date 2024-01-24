@@ -25,7 +25,7 @@ async def station(
                 {
                     "title": "234",
                     "payload": {},
-                    "url": "",
+                    "url": "https://nebo.live/ru/",
                     "hide": True,
                 },
             ],
