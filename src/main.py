@@ -20,6 +20,6 @@ async def station(
     return YandexStationResponse(
         response=ResponseNestedSchema(
             text=nebolive_report.message,
-            end_session=False,
+            end_session=True,
         )
     )
