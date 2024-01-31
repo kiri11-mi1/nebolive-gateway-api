@@ -11,7 +11,7 @@ app = FastAPI(
 )
 
 
-@app.post('/v1/station/', response_model=YandexStationResponse)
+@app.post('/station/v1/', response_model=YandexStationResponse)
 async def station(
     city: str = Query(..., description='Город'),
     nebolive: NeboliveService = Depends(get_nebolive_service),
@@ -25,7 +25,7 @@ async def station(
     )
 
 
-@app.post('/v2/station/', response_model=YandexStationResponse)
+@app.post('/station/v2/', response_model=YandexStationResponse)
 async def station(
     long: float = Query(..., description='Долгота'),
     lat: float = Query(..., description='Широта'),
