@@ -1,20 +1,11 @@
 import hashlib
 import time
 from os import environ
-import logging
 
 import requests
 from starlette import status
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, UUID4, ValidationError
-
-
-logger = logging.getLogger(__name__)
-
-
-class NeboQueryParams(BaseModel):
-    timestamp: int
-    hash: str
 
 
 class SensorData(BaseModel):
@@ -29,7 +20,6 @@ class NeboliveSensorResponse(BaseModel):
 
 
 class NeboliveService:
-
     def __init__(self):
         self.city = 'krs'
         self.sensors_ids = [
@@ -48,30 +38,32 @@ class NeboliveService:
 
     def exact_aqi(self) -> int | None:
         for sensor in self.sensors_ids:
-            url = f'https://nebo.live/api/v2/sensors/{sensor}'
-            response = requests.get(url, params=self.query_params.model_dump())
+            url = f'https://nebo.live/api/v2/sensors/{sensor}/'
+            response = requests.get(url, params=self.query_params, headers={'X-Auth-Nebo': self._token})
 
             if response.status_code != status.HTTP_200_OK:
-                logger.info(f'sensor_id: {sensor}, response code: {response.status_code}')
+                print(f'sensor_id: {sensor}, response code: {response.status_code}, err msg: {response.text}')
                 continue
 
             try:
-                data = NeboliveSensorResponse.model_validate_json(response.json())
+                data = NeboliveSensorResponse.model_validate(response.json())
                 return data.instant.aqi
             except ValidationError as err:
-                logger.info(f'sensor_id: {sensor}, validation error: {err}')
+                print(f'sensor_id: {sensor}, validation error: {err}')
                 continue
 
         return self.aqi_in_city(self.city)
 
-
     @property
-    def query_params(self) -> NeboQueryParams:
+    def query_params(self) -> dict[str, str]:
         timestamp = int(time.time())
         concat = f'{timestamp}{self._code}'
         full_hash = hashlib.sha1(concat.encode()).hexdigest()
         minimal_hash = full_hash[5:16]
-        return NeboQueryParams(timestamp=timestamp, hash=minimal_hash)
+        return {
+            'time': timestamp,
+            'hash': minimal_hash,
+        }
 
     @staticmethod
     def _parse_aqi(content_page: str) -> int | None:
