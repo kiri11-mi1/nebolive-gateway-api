@@ -1,17 +1,77 @@
+import hashlib
+import time
+from os import environ
+import logging
+
 import requests
 from starlette import status
 from bs4 import BeautifulSoup
+from pydantic import BaseModel, UUID4, ValidationError
+
+
+logger = logging.getLogger(__name__)
+
+
+class NeboQueryParams(BaseModel):
+    timestamp: int
+    hash: str
+
+
+class SensorData(BaseModel):
+    temperature: float
+    humidity: float
+    aqi: int
+
+
+class NeboliveSensorResponse(BaseModel):
+    id: UUID4
+    instant: SensorData
 
 
 class NeboliveService:
+
+    def __init__(self):
+        self.city = 'krs'
+        self.sensors_ids = [
+            '54e36173-1bdd-47a6-85dc-94920f466303',  # Гладкова 23
+            'e98c451b-4811-43b5-a659-e95fa262ecb2',  # Белинского
+            'a8a8d649-3795-44cc-b263-c28ddd87c019',  # Московская 9
+        ]
+        self._token = environ['NEBOLIVE_TOKEN']
+        self._code = environ['NEBOLIVE_CODE']
+
     def aqi_in_city(self, city: str) -> int | None:
         response = requests.get(f'https://nebo.live/ru/{city}/')
         if response.status_code != status.HTTP_200_OK:
             return None
         return self._parse_aqi(response.text)
 
-    def get_report_by_position(self, lat: float, long: float) -> int:
-        pass
+    def exact_aqi(self) -> int | None:
+        for sensor in self.sensors_ids:
+            url = f'https://nebo.live/api/v2/sensors/{sensor}'
+            response = requests.get(url, params=self.query_params.model_dump())
+
+            if response.status_code != status.HTTP_200_OK:
+                logger.info(f'sensor_id: {sensor}, response code: {response.status_code}')
+                continue
+
+            try:
+                data = NeboliveSensorResponse.model_validate_json(response.json())
+                return data.instant.aqi
+            except ValidationError as err:
+                logger.info(f'sensor_id: {sensor}, validation error: {err}')
+                continue
+
+        return self.aqi_in_city(self.city)
+
+
+    @property
+    def query_params(self) -> NeboQueryParams:
+        timestamp = int(time.time())
+        concat = f'{timestamp}{self._code}'
+        full_hash = hashlib.sha1(concat.encode()).hexdigest()
+        minimal_hash = full_hash[5:16]
+        return NeboQueryParams(timestamp=timestamp, hash=minimal_hash)
 
     @staticmethod
     def _parse_aqi(content_page: str) -> int | None:
@@ -22,24 +82,6 @@ class NeboliveService:
         if not aqi.isdigit():
             return None
         return int(aqi)
-
-
-def generate_report(aqi: int | None) -> str:
-    if aqi is None:
-        return 'Не удалось получить данные. Обратитесь ко мне позже.'
-
-    if aqi <= 50:
-        return f'Воздух на улице чистый. Можно выйти на улицу. Индекс качества воздуха равен {aqi}.'
-    elif 50 < aqi <= 100:
-        return f'Небольшой уровень загрязнения воздуха. Дышать воздухом можно. Индекс качества воздуха равен {aqi}.'
-    elif 100 < aqi <= 150:
-        return f'Средний уровень загрязнения воздуха. Все еще можно выйти на улицу. Индекс качества воздуха равен {aqi}'
-    elif 150 < aqi <= 200:
-        return f'Высокий уровень загрязнения воздуха, дышать таким воздухом опасно. Воздержитесь от выхода на улицу. Индекс качества воздуха равен {aqi}.'
-    elif 200 < aqi <= 300:
-        return f'Воздух очень вредный. Не выходите на улицу, дышать таким воздухом опасно. Индекс качества воздуха равен {aqi}.'
-    else:
-        return f'Очень высокий уровень загрязнения воздуха. Не выходите на улицу. Индекс качества воздуха равен {aqi}.'
 
 
 def get_nebolive_service() -> NeboliveService:

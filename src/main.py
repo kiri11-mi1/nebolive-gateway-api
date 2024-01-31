@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI
 
-from schemas import YandexStationResponse, ResponseNestedSchema
-from service import generate_report, get_nebolive_service, NeboliveService
+from report import generate_report
+from service import get_nebolive_service, NeboliveService
 from fastapi import Depends
+from pydantic import BaseModel
 
 app = FastAPI(
     docs_url='/docs',
@@ -11,24 +12,22 @@ app = FastAPI(
 )
 
 
+class ResponseNestedSchema(BaseModel):
+    text: str
+    end_session: bool = True
+
+
+class YandexStationResponse(BaseModel):
+    response: ResponseNestedSchema
+    version: str = '1.0'
+
+
 @app.post('/station/v1/', response_model=YandexStationResponse)
-async def station(
-    city: str = Query(..., description='Город'),
-    nebolive: NeboliveService = Depends(get_nebolive_service),
-):
-    aqi = nebolive.aqi_in_city(city)
+async def station(nebolive: NeboliveService = Depends(get_nebolive_service)):
+    aqi = nebolive.exact_aqi()
     return YandexStationResponse(
         response=ResponseNestedSchema(
             text=generate_report(aqi=aqi),
             end_session=True,
         )
     )
-
-
-@app.post('/station/v2/', response_model=YandexStationResponse)
-async def station(
-    long: float = Query(..., description='Долгота'),
-    lat: float = Query(..., description='Широта'),
-    nebolive: NeboliveService = Depends(get_nebolive_service),
-):
-    pass
