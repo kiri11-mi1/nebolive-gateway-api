@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Query
 
 from schemas import YandexStationResponse, ResponseNestedSchema
-from service import get_nebolive_service, NeboliveService
+from service import generate_report, get_nebolive_service, NeboliveService
 from fastapi import Depends
 
 app = FastAPI(
@@ -11,15 +11,24 @@ app = FastAPI(
 )
 
 
-@app.post('/station/', response_model=YandexStationResponse)
+@app.post('/v1/station/', response_model=YandexStationResponse)
 async def station(
     city: str = Query(..., description='Город'),
     nebolive: NeboliveService = Depends(get_nebolive_service),
 ):
-    nebolive_report = nebolive.get_report_by_city(city)
+    aqi = nebolive.aqi_in_city(city)
     return YandexStationResponse(
         response=ResponseNestedSchema(
-            text=nebolive_report.message,
+            text=generate_report(aqi=aqi),
             end_session=True,
         )
     )
+
+
+@app.post('/v2/station/', response_model=YandexStationResponse)
+async def station(
+    long: float = Query(..., description='Долгота'),
+    lat: float = Query(..., description='Широта'),
+    nebolive: NeboliveService = Depends(get_nebolive_service),
+):
+    pass
