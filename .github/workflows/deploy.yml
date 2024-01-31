@@ -15,6 +15,7 @@ jobs:
         uses: SpicyPizza/create-envfile@v1.3
         with:
           envkey_NEBOLIVE_TOKEN: ${{ secrets.NEBOLIVE_TOKEN }}
+          envkey_NEBOLIVE_CODE: ${{ secrets.NEBOLIVE_CODE }}
 
           directory: ./
           file_name: .env
