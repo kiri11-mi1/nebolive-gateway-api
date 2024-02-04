@@ -36,13 +36,13 @@ class NeboliveService:
             return None
         return self._parse_aqi(response.text)
 
-    def fetch_sensors(self, city_slug: str) -> list[NeboliveSensorResponse] | None:
+    def fetch_sensors(self, city_slug: str) -> list[NeboliveSensorResponse]:
         """Список датчиков."""
         url = f'https://nebo.live/api/v2/cities/{city_slug}/'
         response = requests.get(url, params=self.query_params, headers=self._headers)
         if response.status_code != status.HTTP_200_OK:
             logger.warning(f'city_{city_slug}, status code: {response.status_code}, response: {response.text}')
-            return None
+            return []
 
         sensors = NeboliveSensors.validate_python(response.json())
         return sensors
