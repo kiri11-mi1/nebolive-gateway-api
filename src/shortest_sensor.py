@@ -24,9 +24,10 @@ def calculate_shortest_sensor(
             continue
         sensor_pos = Position(lat=sensor.lat, lng=sensor.lng)
         dist = distance(curr_pos, sensor_pos)
-        if dist < min_distance:
-            min_distance = dist
-            shortest_sensor = sensor
+        if dist >= min_distance:
+            continue
+        min_distance = dist
+        shortest_sensor = sensor
 
     return shortest_sensor
 
